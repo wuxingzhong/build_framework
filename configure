@@ -1,0 +1,106 @@
+#!/bin/bash
+
+# @Author: wuxingzhong
+# @Date:   2017-06-27 15:46:53
+# @Last Modified by:   wuxingzhong
+# @Last Modified time: 2017-06-26 17:09:10
+
+
+GLOBAL_BASE_DIR=`pwd`
+GLOBAL_FILE_MAKEFILE="Makefile"
+GLOBAL_DIR_OBJS="objs"
+GLOBAL_PROGRAM_NAME="test"
+
+mkdir -p ${GLOBAL_DIR_OBJS}
+
+#####################################################################################
+# prepare the depends tools
+#####################################################################################
+# st-1.9
+
+
+#####################################################################################
+# generate Makefile.
+#####################################################################################
+echo "generate Makefile"
+
+cat << END > ${GLOBAL_FILE_MAKEFILE}
+.PHONY: default help clean $GLOBAL_PROGRAM_NAME _prepare_dir
+default: $GLOBAL_PROGRAM_NAME
+
+help:
+	@echo "Usage: make <help>|<clean>"
+	@echo "  help       display this help menu"
+	@echo "  clean      cleanup project"
+
+clean:
+	(cd ${GLOBAL_DIR_OBJS}; rm -rf src )
+
+$GLOBAL_PROGRAM_NAME: _prepare_dir
+	@echo "build the program! "
+	\$(MAKE) -f ${GLOBAL_DIR_OBJS}/${GLOBAL_FILE_MAKEFILE} $GLOBAL_PROGRAM_NAME
+
+# the ./configure will generate it.
+_prepare_dir:
+	@mkdir -p ${GLOBAL_DIR_OBJS}
+END
+
+echo 'generate Makefile ok!'
+
+# the performance analysis, gperf
+#PERFORMANCE="-pg"
+#PERFORMANCELINK="-pg"
+# enable gdb debug
+GDB_DEBUG="-g -O0"
+# the warning level.
+WARN_LEVEL="-Wall -Wextra"
+# the compile standard.
+CPP_STD="-std=c++98"
+# other macros defined
+USER_MACROS=""
+# the cxx flag generated.
+CXXFLAGS="${CPP_STD} ${WARN_LEVEL} ${GDB_DEBUG} ${PERFORMANCE} ${USER_MACROS}"
+cat << END > ${GLOBAL_DIR_OBJS}/${GLOBAL_FILE_MAKEFILE}
+CXXFLAGS = ${CXXFLAGS}
+GCC = g++
+LINK = \$(GCC)
+AR = ar
+
+.PHONY: default server
+
+default:
+
+END
+
+# Libraries
+LIB_XX_ROOT="${GLOBAL_DIR_OBJS}"
+LIB_XX_FILE="${LIB_XX_ROOT}"
+
+
+#Module
+MODULE_ID="MAIN"
+MODULE_DIR="src/main"
+# MODULE_DEPENDS=("CORE")
+ModuleLibIncs=(${LIB_XX_ROOT})
+
+cd $MODULE_DIR
+FILE_SUBFIX=".cpp"
+MODULE_FILES=$(ls -1 *${FILE_SUBFIX} 2>/dev/null |xargs basename -s ${FILE_SUBFIX}  2>/dev/null)
+MODULE_FILES= "${MODULE_FILES[@]}"
+cd $GLOBAL_BASE_DIR && . auto/modules.sh
+
+MAIN_OBJS="${MODULE_OBJS[@]}"
+# all main entrances
+MAIN_ENTRANCES=("srs_main_server")
+
+
+ModuleLibFiles=(${LibSTfile})
+MODULE_OBJS="${CORE_OBJS[@]} ${CONFIG_OBJS[@]} ${PROTOCOL_OBJS[@]} ${MAIN_OBJS[@]}"
+BUILD_KEY=$GLOBAL_PROGRAM_NAME APP_MAIN="srs_main_server" APP_NAME=$GLOBAL_PROGRAM_NAME LINK_OPTIONS="-ldl" SO_PATH="" . auto/apps.sh
+
+echo 'configure ok! '
+
+# next step.
+echo "you can:"
+echo "\" make \" to build  ."
+echo "\" make help \" to get the usage of make"
