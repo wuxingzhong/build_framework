@@ -2,13 +2,8 @@
 FILE=${GLOBAL_OBJS_DIR}/${GLOBAL_MAKEFILE}
 cat << END > ${GLOBAL_OBJS_DIR}/${GLOBAL_MAKEFILE}
 
-ALL_INCLUDES=
-ALL_OBJECTS=
-ALL_DEPS=
-
 #### PROJECT SETTINGS ####
 # The name of the executable to be created
-BIN_NAME := ${GLOBAL_APP_NAME}
 # Compiler use
 CC ?= ${CC}
 CXX ?= ${CXX}
@@ -41,6 +36,11 @@ DESTDIR = /
 INSTALL_PREFIX = usr/local
 #### END PROJECT SETTINGS ####
 
+
+ALL_INCLUDES=
+ALL_OBJECTS=
+ALL_DEPS=
+
 print-%: ; @echo \$*=\$(\$*)
 SHELL = /bin/bash
 # Clear built-in rules
@@ -62,13 +62,23 @@ release: export CFLAGS := \$(CFLAGS) \$(COMPILE_FLAGS) \$(RCOMPILE_FLAGS)
 release: export LDFLAGS := \$(LDFLAGS) \$(LINK_FLAGS) \$(RLINK_FLAGS)
 release: export CXXFLAGS := \$(CXXFLAGS) \$(CXX_COMPILE_FLAGS) \$(RCOMPILE_FLAGS)
 
-TIME_FILE = \$(dir \$@).\$(notdir \$@)_time
-START_TIME = date '+%s' > \$(TIME_FILE)
-
-END_TIME = read st < \$(TIME_FILE) ; \\
-	\$(RM) \$(TIME_FILE) ; \\
-	st=\$\$((`date '+%s'` - \$\$st - 86400)) ; \\
-	echo \`date -u -d @\$\$st '+%H:%M:%S'\`
+# Macros for timing compilation
+ifeq (\$(UNAME_S),Darwin)
+	CUR_TIME = awk 'BEGIN{srand(); print srand()}'
+	TIME_FILE = \$(dir \$@).\$(notdir \$@)_time
+	START_TIME = \$(CUR_TIME) > \$(TIME_FILE)
+	END_TIME = read st < \$(TIME_FILE) ; \\
+		\$(RM) \$(TIME_FILE) ; \\
+		st=\$\$((\`\$(CUR_TIME)\` - \$\$st)) ; \\
+		echo \$\$st
+else
+	TIME_FILE = \$(dir \$@).\$(notdir \$@)_time
+	START_TIME = date '+%s' > \$(TIME_FILE)
+	END_TIME = read st < \$(TIME_FILE) ; \\
+		\$(RM) \$(TIME_FILE) ; \\
+		st=\$\$((\`date '+%s'\` - \$\$st - 86400)) ; \\
+		echo \`date -u -d @\$\$st '+%H:%M:%S'\`
+endif
 
 .PHONY: release
 release: dirs
@@ -87,8 +97,6 @@ dirs:
 	@mkdir -p \$(dir \$(ALL_OBJECTS))
 .PHONY: clean
 clean:
-	@echo "Deleting \$(BIN_NAME) symlink"
-	@\$(RM) \$(BIN_NAME)
 	@echo "Deleting directories"
 	@\$(RM) -r ${GLOBAL_OBJS_DIR}
 

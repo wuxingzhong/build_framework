@@ -9,7 +9,6 @@
 GLOBAL_WORK_DIR=`pwd`
 GLOBAL_MAKEFILE="Makefile"
 GLOBAL_OBJS_DIR="objs"
-GLOBAL_APP_NAME="test"
 SRC_EXT="c"
 CXX_SRC_EXT="cpp"
 # Compiler used
@@ -25,9 +24,9 @@ mkdir -p "${GLOBAL_WORK_DIR}/${GLOBAL_OBJS_DIR}"
 echo "generate main Makefile"
 
 cat << END > ${GLOBAL_MAKEFILE}
-.PHONY: default help clean $GLOBAL_APP_NAME _prepare_dir
+.PHONY: default help clean defualt_app _prepare_dir
 
-default: $GLOBAL_APP_NAME
+default: defualt_app
 
 help:
 	@echo "Usage: make <help>|<clean>"
@@ -37,14 +36,13 @@ help:
 clean:
 	(cd ${GLOBAL_OBJS_DIR}; rm -rf src )
 
-$GLOBAL_APP_NAME: _prepare_dir
+defualt_app: _prepare_dir
 	@echo "build the program! "
-	\$(MAKE) -f ${GLOBAL_OBJS_DIR}/${GLOBAL_MAKEFILE} $GLOBAL_APP_NAME
+	\$(MAKE) -f ${GLOBAL_OBJS_DIR}/${GLOBAL_MAKEFILE} defualt_app
 
 _prepare_dir:
 	@mkdir -p ${GLOBAL_OBJS_DIR}
-dirs:
-	\$(MAKE) -f ${GLOBAL_OBJS_DIR}/${GLOBAL_MAKEFILE} dirs
+
 
 END
 
@@ -81,8 +79,8 @@ APP_DEPENDS=("MAIN")
 APP_INCLUDES_DIR=("./")
 APP_INC_LIBS=()
 APP_MAIN_ENTRANCES=("MAIN")
-BUILD_KEY="test"
-APP_NAME="test_main"
+BUILD_KEY="defualt_app"
+APP_NAME="hello"
 . auto/apps.sh
 
 . auto/makefile_foot.sh

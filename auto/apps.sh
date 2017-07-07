@@ -9,6 +9,11 @@ echo "# build ${APP_TARGET} start. " >> ${FILE}
 echo ".PYTHON: ${BUILD_KEY}" >> ${FILE}
 echo "${BUILD_KEY}: dirs ${APP_TARGET}" >> ${FILE}
 
+cat << END >> ${FILE}
+	@\$(START_TIME)
+	@echo -n "Total build time: "
+	@\$(END_TIME)
+END
 
 echo -n "${APP_TARGET}: " >> ${FILE}
 for item in ${APP_DEPENDS[*]}; do
