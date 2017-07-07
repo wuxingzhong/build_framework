@@ -6,27 +6,28 @@
 # @Last Modified time: 2017-06-26 17:09:10
 
 
-GLOBAL_BASE_DIR=`pwd`
-GLOBAL_FILE_MAKEFILE="Makefile"
-GLOBAL_DIR_OBJS="objs"
-GLOBAL_PROGRAM_NAME="test"
+GLOBAL_WORK_DIR=`pwd`
+GLOBAL_MAKEFILE="Makefile"
+GLOBAL_OBJS_DIR="objs"
+GLOBAL_APP_NAME="test"
+SRC_EXT="c"
+CXX_SRC_EXT="cpp"
+# Compiler used
+CC=gcc
+CXX=g++
+LINK=${CXX}
+AR=ar
 
-mkdir -p ${GLOBAL_DIR_OBJS}
 
-#####################################################################################
-# prepare the depends tools
-#####################################################################################
-# st-1.9
+mkdir -p "${GLOBAL_WORK_DIR}/${GLOBAL_OBJS_DIR}"
 
+# generate main Makefile.
+echo "generate main Makefile"
 
-#####################################################################################
-# generate Makefile.
-#####################################################################################
-echo "generate Makefile"
+cat << END > ${GLOBAL_MAKEFILE}
+.PHONY: default help clean $GLOBAL_APP_NAME _prepare_dir
 
-cat << END > ${GLOBAL_FILE_MAKEFILE}
-.PHONY: default help clean $GLOBAL_PROGRAM_NAME _prepare_dir
-default: $GLOBAL_PROGRAM_NAME
+default: $GLOBAL_APP_NAME
 
 help:
 	@echo "Usage: make <help>|<clean>"
@@ -34,70 +35,57 @@ help:
 	@echo "  clean      cleanup project"
 
 clean:
-	(cd ${GLOBAL_DIR_OBJS}; rm -rf src )
+	(cd ${GLOBAL_OBJS_DIR}; rm -rf src )
 
-$GLOBAL_PROGRAM_NAME: _prepare_dir
+$GLOBAL_APP_NAME: _prepare_dir
 	@echo "build the program! "
-	\$(MAKE) -f ${GLOBAL_DIR_OBJS}/${GLOBAL_FILE_MAKEFILE} $GLOBAL_PROGRAM_NAME
+	\$(MAKE) -f ${GLOBAL_OBJS_DIR}/${GLOBAL_MAKEFILE} $GLOBAL_APP_NAME
 
-# the ./configure will generate it.
 _prepare_dir:
-	@mkdir -p ${GLOBAL_DIR_OBJS}
+	@mkdir -p ${GLOBAL_OBJS_DIR}
+dirs:
+	\$(MAKE) -f ${GLOBAL_OBJS_DIR}/${GLOBAL_MAKEFILE} dirs
+
 END
 
 echo 'generate Makefile ok!'
 
-# the performance analysis, gperf
-#PERFORMANCE="-pg"
-#PERFORMANCELINK="-pg"
-# enable gdb debug
-GDB_DEBUG="-g -O0"
-# the warning level.
-WARN_LEVEL="-Wall -Wextra"
-# the compile standard.
-CPP_STD="-std=c++98"
-# other macros defined
-USER_MACROS=""
-# the cxx flag generated.
-CXXFLAGS="${CPP_STD} ${WARN_LEVEL} ${GDB_DEBUG} ${PERFORMANCE} ${USER_MACROS}"
-cat << END > ${GLOBAL_DIR_OBJS}/${GLOBAL_FILE_MAKEFILE}
-CXXFLAGS = ${CXXFLAGS}
-GCC = g++
-LINK = \$(GCC)
-AR = ar
-
-.PHONY: default server
-
-default:
-
-END
-
+echo "generate ${GLOBAL_OBJS_DIR}/${GLOBAL_MAKEFILE} "
+. auto/makefile_head.sh
 # Libraries
-LIB_XX_ROOT="${GLOBAL_DIR_OBJS}"
+LIB_XX_ROOT="${GLOBAL_OBJS_DIR}"
 LIB_XX_FILE="${LIB_XX_ROOT}"
 
-
-#Module
+# main Module
 MODULE_ID="MAIN"
-MODULE_DIR="src/main"
-# MODULE_DEPENDS=("CORE")
-ModuleLibIncs=(${LIB_XX_ROOT})
-
-cd $MODULE_DIR
-FILE_SUBFIX=".cpp"
-MODULE_FILES=$(ls -1 *${FILE_SUBFIX} 2>/dev/null |xargs basename -s ${FILE_SUBFIX}  2>/dev/null)
-MODULE_FILES= "${MODULE_FILES[@]}"
-cd $GLOBAL_BASE_DIR && . auto/modules.sh
-
-MAIN_OBJS="${MODULE_OBJS[@]}"
-# all main entrances
-MAIN_ENTRANCES=("srs_main_server")
+MODULE_SRC_DIR=("src/main")
+# MODULE_ID array
+MODULE_DEPENDS=()
+MODULE_INCLUDES_DIR=()
+MODULE_ENTRANCES_FILES=("main.cpp")
+Module_INC_LIBS=()
+. auto/modules.sh
 
 
-ModuleLibFiles=(${LibSTfile})
-MODULE_OBJS="${CORE_OBJS[@]} ${CONFIG_OBJS[@]} ${PROTOCOL_OBJS[@]} ${MAIN_OBJS[@]}"
-BUILD_KEY=$GLOBAL_PROGRAM_NAME APP_MAIN="srs_main_server" APP_NAME=$GLOBAL_PROGRAM_NAME LINK_OPTIONS="-ldl" SO_PATH="" . auto/apps.sh
+# core Module
+MODULE_ID="CORE"
+MODULE_SRC_DIR=("src/hello" )
+MODULE_DEPENDS=()
+MODULE_INCLUDES_DIR=("./" )
+Module_INC_LIBS=()
+MODULE_ENTRANCES_FILES=("hello.c")
+. auto/modules.sh
 
+# app
+APP_DEPENDS=("MAIN")
+APP_INCLUDES_DIR=("./")
+APP_INC_LIBS=()
+APP_MAIN_ENTRANCES=("MAIN")
+BUILD_KEY="test"
+APP_NAME="test_main"
+. auto/apps.sh
+
+. auto/makefile_foot.sh
 echo 'configure ok! '
 
 # next step.
