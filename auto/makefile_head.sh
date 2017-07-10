@@ -32,7 +32,7 @@ SHELL = /bin/bash
 .SUFFIXES:
 
 # Append pkg-config specific libraries if need be
-ifneq (\$(LIBS),)
+ifneq (\$(PKG-CONFIG-LIBS),)
 	COMPILE_FLAGS += \$(shell pkg-config --cflags \$(PKG-CONFIG-LIBS))
 	LINK_FLAGS += \$(shell pkg-config --libs \$(PKG-CONFIG-LIBS))
 endif
