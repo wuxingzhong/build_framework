@@ -17,6 +17,13 @@ CXX=g++
 LINK=${CXX}
 AR=ar
 
+# General compiler flags
+COMPILE_FLAGS="-std=c99 -Wall -Wextra -g"
+CXX_COMPILE_FLAGS="-std=c++11 -Wall -Wextra -g"
+# General linker settings
+LINK_FLAGS=
+# Space-separated pkg-config libraries used by this project
+PKG_CONFIG_LIBS=
 
 mkdir -p "${GLOBAL_WORK_DIR}/${GLOBAL_OBJS_DIR}"
 
@@ -40,6 +47,10 @@ defualt_app: _prepare_dir
 	@echo "build the program! "
 	\$(MAKE) -f ${GLOBAL_OBJS_DIR}/${GLOBAL_MAKEFILE} defualt_app
 
+app-%: _prepare_dir
+	@echo "build the program! \$*"
+	\$(MAKE) -f ${GLOBAL_OBJS_DIR}/${GLOBAL_MAKEFILE} \$*
+
 _prepare_dir:
 	@mkdir -p ${GLOBAL_OBJS_DIR}
 
@@ -57,21 +68,19 @@ LIB_XX_FILE="${LIB_XX_ROOT}"
 # main Module
 MODULE_ID="MAIN"
 MODULE_SRC_DIR=("src/main")
+MODULE_ENTRANCES_FILES=("main.cpp")
 # MODULE_ID array
 MODULE_DEPENDS=()
 MODULE_INCLUDES_DIR=()
-MODULE_ENTRANCES_FILES=("main.cpp")
-Module_INC_LIBS=()
 . auto/modules.sh
 
 
 # core Module
 MODULE_ID="CORE"
 MODULE_SRC_DIR=("src/hello" )
+MODULE_ENTRANCES_FILES=("hello.c")
 MODULE_DEPENDS=()
 MODULE_INCLUDES_DIR=("./" )
-Module_INC_LIBS=()
-MODULE_ENTRANCES_FILES=("hello.c")
 . auto/modules.sh
 
 # app
@@ -81,6 +90,16 @@ APP_INC_LIBS=()
 APP_MAIN_ENTRANCES=("MAIN")
 BUILD_KEY="defualt_app"
 APP_NAME="hello"
+. auto/apps.sh
+
+# app
+APP_DEPENDS=("CORE")
+APP_INCLUDES_DIR=("./")
+APP_INC_LIBS=("./lib64/test.a" "./openssl/ssl.a" )
+APP_LINK_OPTIONS="-ldl -lm -lc"
+APP_MAIN_ENTRANCES=("CORE")
+BUILD_KEY="core_test"
+APP_NAME="core_test"
 . auto/apps.sh
 
 . auto/makefile_foot.sh

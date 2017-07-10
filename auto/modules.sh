@@ -27,6 +27,7 @@ done
 for item in ${MODULE_INCLUDES_DIR[*]}; do
     echo -n "-I ${item} " >> ${FILE}
 done
+echo -n $(pkg-config --cflags ${PKG_CONFIG_LIBS[@]} 2>/dev/null ) >>${FILE}
 echo "" >> ${FILE};
 echo "ALL_INCLUDES+=\$(${MODULE_ID}_MODULE_INCS)  " >> ${FILE}
 

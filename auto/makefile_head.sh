@@ -15,27 +15,12 @@ SRC_EXT = ${SRC_EXT}
 CXX_SRC_EXT = ${CXX_SRC_EXT}
 
 # Space-separated pkg-config libraries used by this project
-LIBS =
+PKG_CONFIG_LIBS = ${PKG_CONFIG_LIBS}
 # General compiler flags
-COMPILE_FLAGS = -std=c99 -Wall -Wextra -g
-CXX_COMPILE_FLAGS = -std=c++11 -Wall -Wextra -g
-# Additional release-specific flags
-RCOMPILE_FLAGS = -D NDEBUG
-# Additional debug-specific flags
-DCOMPILE_FLAGS = -D DEBUG
-
+COMPILE_FLAGS = ${COMPILE_FLAGS}
+CXX_COMPILE_FLAGS = ${CXX_COMPILE_FLAGS}
 # General linker settings
-LINK_FLAGS =
-# Additional release-specific linker settings
-RLINK_FLAGS =
-# Additional debug-specific linker settings
-DLINK_FLAGS =
-# Destination directory, like a jail or mounted system
-DESTDIR = /
-# Install path (bin/ is appended automatically)
-INSTALL_PREFIX = usr/local
-#### END PROJECT SETTINGS ####
-
+LINK_FLAGS = ${LINK_FLAGS}
 
 ALL_INCLUDES=
 ALL_OBJECTS=
@@ -48,8 +33,8 @@ SHELL = /bin/bash
 
 # Append pkg-config specific libraries if need be
 ifneq (\$(LIBS),)
-	COMPILE_FLAGS += \$(shell pkg-config --cflags \$(LIBS))
-	LINK_FLAGS += \$(shell pkg-config --libs \$(LIBS))
+	COMPILE_FLAGS += \$(shell pkg-config --cflags \$(PKG-CONFIG-LIBS))
+	LINK_FLAGS += \$(shell pkg-config --libs \$(PKG-CONFIG-LIBS))
 endif
 
 export V := false
@@ -58,9 +43,9 @@ ifeq (\$(V),true)
 	CMD_PREFIX :=
 endif
 
-release: export CFLAGS := \$(CFLAGS) \$(COMPILE_FLAGS) \$(RCOMPILE_FLAGS)
-release: export LDFLAGS := \$(LDFLAGS) \$(LINK_FLAGS) \$(RLINK_FLAGS)
-release: export CXXFLAGS := \$(CXXFLAGS) \$(CXX_COMPILE_FLAGS) \$(RCOMPILE_FLAGS)
+export CFLAGS := \$(CFLAGS) \$(COMPILE_FLAGS)
+export LDFLAGS := \$(LDFLAGS) \$(LINK_FLAGS)
+export CXXFLAGS := \$(CXXFLAGS) \$(CXX_COMPILE_FLAGS)
 
 # Macros for timing compilation
 ifeq (\$(UNAME_S),Darwin)
@@ -80,17 +65,6 @@ else
 		echo \`date -u -d @\$\$st '+%H:%M:%S'\`
 endif
 
-.PHONY: release
-release: dirs
-ifeq (\$(USE_VERSION), true)
-	@echo "Beginning release build v\$(VERSION_STRING)"
-else
-	@echo "Beginning release build"
-endif
-	@\$(START_TIME)
-	@\$(MAKE) all --no-print-directory
-	@echo -n "Total build time: "
-	@\$(END_TIME)
 .PHONY: dirs
 dirs:
 	@echo "Creating directories"
