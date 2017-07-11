@@ -28,12 +28,12 @@ echo "" >> ${FILE}
 echo "generate app ${APP_NAME} link...";
 
 
-echo -n "	\$(LINK) \$(LDFLAGS) " >> ${FILE}
+echo -n "	\$(LINK) \$(LDFLAGS) \$^ " >> ${FILE}
 for item in ${APP_INC_LIBS[*]};do
 	echo -n "${item} " >> ${FILE}
 done
 
-echo "\$^ ${APP_LINK_OPTIONS} -o \$@ " >> ${FILE}
+echo " ${APP_LINK_OPTIONS} -o \$@ " >> ${FILE}
 
 echo "# build ${APP_TARGET} end. " >> ${FILE}
 
