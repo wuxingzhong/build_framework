@@ -33,7 +33,7 @@ for item in ${APP_INC_LIBS[*]};do
 	echo -n "${item} " >> ${FILE}
 done
 
-echo "\$< ${APP_LINK_OPTIONS} -o \$@ " >> ${FILE}
+echo "\$^ ${APP_LINK_OPTIONS} -o \$@ " >> ${FILE}
 
 echo "# build ${APP_TARGET} end. " >> ${FILE}
 
